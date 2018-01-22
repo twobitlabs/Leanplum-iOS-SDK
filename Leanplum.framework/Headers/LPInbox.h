@@ -3,9 +3,24 @@
 //  Leanplum
 //
 //  Created by Aleksandar Gyorev on 05/08/15.
-//  Copyright (c) 2015 Leanplum. All rights reserved.
+//  Copyright (c) 2015 Leanplum, Inc. All rights reserved.
 //
+//  Licensed to the Apache Software Foundation (ASF) under one
+//  or more contributor license agreements.  See the NOTICE file
+//  distributed with this work for additional information
+//  regarding copyright ownership.  The ASF licenses this file
+//  to you under the Apache License, Version 2.0 (the "License");
+//  you may not use this file except in compliance with the License.
+//  You may obtain a copy of the License at
 //
+//  http://www.apache.org/licenses/LICENSE-2.0
+//
+//  Unless required by applicable law or agreed to in writing,
+//  software distributed under the License is distributed on an
+//  "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+//  KIND, either express or implied.  See the License for the
+//  specific language governing permissions and limitations
+//  under the License.
 
 #import <Foundation/Foundation.h>
 
@@ -29,6 +44,24 @@
  * Returns the subtitle of the inbox message.
  */
 - (NSString *)subtitle;
+
+/**
+ * Returns the image path of the inbox message. Can be nil.
+ * Use with [UIImage contentsOfFile:].
+ */
+- (NSString *)imageFilePath;
+
+/**
+ * Returns the image URL of the inbox message.
+ * You can safely use this with prefetching enabled.
+ * It will return the file URL path instead if the image is in cache.
+ */
+- (NSURL *)imageURL;
+
+/**
+ * Returns the data of the inbox message. Advanced use only.
+ */
+- (NSDictionary *)data;
 
 /**
  * Returns the delivery timestamp of the inbox message.
@@ -62,7 +95,8 @@
 /**
  * This block is used when you define a callback.
  */
-typedef void (^LeanplumInboxChangedBlock)();
+typedef void (^LeanplumInboxChangedBlock)(void);
+typedef void (^LeanplumInboxSyncedBlock)(BOOL success);
 
 @interface LPInbox : NSObject
 
@@ -105,11 +139,24 @@ typedef void (^LeanplumInboxChangedBlock)();
 - (LPInboxMessage *)messageForId:(NSString *)messageId;
 
 /**
+ * Call this method if you don't want Inbox images to be prefetched.
+ * Useful if you only want to deal with image URL.
+ */
+- (void)disableImagePrefetching;
+
+/**
  * Block to call when the inbox receive new values from the server.
  * This will be called on start, and also later on if the user is in an experiment
  * that can update in realtime.
  */
 - (void)onChanged:(LeanplumInboxChangedBlock)block;
+
+/**
+ * Block to call when forceContentUpdate was called.
+ * Returns true if syncing was successful.
+ * Note: use onChanged: for UI.
+ */
+- (void)onForceContentUpdate:(LeanplumInboxSyncedBlock)block;
 
 /**
  @{
@@ -128,7 +175,7 @@ typedef void (^LeanplumInboxChangedBlock)();
 
 @end
 
-typedef void (^LeanplumNewsfeedChangedBlock)();
+typedef void (^LeanplumNewsfeedChangedBlock)(void);
 
 @interface LPNewsfeed : NSObject
 
